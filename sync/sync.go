@@ -1,4 +1,4 @@
-package main
+package sync
 
 import (
 	"fmt"
@@ -13,14 +13,14 @@ import (
 	"go.bmvs.io/ynab/api/transaction"
 )
 
-type SyncCmd struct {
+type Cmd struct {
 	SimpleFINYnabAccountMapping map[string]string `mapsep:";" name:"simplefin_ynab_account_mapping" help:"SimpleFIN account IDs mapped to YNAB account IDs"`
 	Start                       string            `help:"If given, transactions will be restricted to those on or after this Unix epoch timestamp"`
 	End                         string            `help:"If given, transactions will be restricted to those before (but not on) this Unix epoch timestamp"`
 	PrintAccounts               bool              `default:"false" help:"If present, will print the resolved SimpleFIN/YNAB account mapping"`
 }
 
-func (o *SyncCmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin simplefin.Client, table *tablewriter.Table) error {
+func (o *Cmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin simplefin.Client, table *tablewriter.Table) error {
 	data, err := simplefin.Get("/accounts", o.Start, o.End)
 	if err != nil {
 		return err
