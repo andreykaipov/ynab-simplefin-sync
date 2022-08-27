@@ -74,6 +74,11 @@ func (o *SyncCmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin sim
 
 	table.Render()
 
+	if len(txs) == 0 {
+		fmt.Println("No transactions to import for specified date range.")
+		return nil
+	}
+
 	resp, err := ynab.Transaction().CreateTransactions(budgetID, txs)
 	if err != nil {
 		return err
