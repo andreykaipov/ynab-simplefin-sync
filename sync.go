@@ -15,8 +15,9 @@ import (
 
 type SyncCmd struct {
 	SimpleFINYnabAccountMapping map[string]string `mapsep:";" name:"simplefin_ynab_account_mapping" help:"SimpleFIN account IDs mapped to YNAB account IDs"`
-	Start                       string            `help:"If given, transactions will be restricted to those on or after this Unix epoch timestamp. Default is 7d ago."`
-	End                         string            `help:"If given, transactions will be restricted to those before (but not on) this Unix epoch timestamp."`
+	Start                       string            `help:"If given, transactions will be restricted to those on or after this Unix epoch timestamp"`
+	End                         string            `help:"If given, transactions will be restricted to those before (but not on) this Unix epoch timestamp"`
+	PrintAccounts               bool              `default:"false" help:"If present, will print the resolved SimpleFIN/YNAB account mapping"`
 }
 
 func (o *SyncCmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin simplefin.Client, table *tablewriter.Table) error {
@@ -72,7 +73,10 @@ func (o *SyncCmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin sim
 		}
 	}
 
-	table.Render()
+	if o.PrintAccounts {
+		table.Render()
+		fmt.Println()
+	}
 
 	if len(txs) == 0 {
 		fmt.Println("No transactions to import for specified date range.")
@@ -84,7 +88,6 @@ func (o *SyncCmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin sim
 		return err
 	}
 
-	fmt.Println()
 	fmt.Printf("Imported %d transactions.\n", len(resp.TransactionIDs))
 	fmt.Printf("There were %d duplicates.\n", len(resp.DuplicateImportIDs))
 
