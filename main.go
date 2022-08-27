@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/andreykaipov/ynab-simplefin-sync/simplefin"
+	"github.com/andreykaipov/ynab-simplefin-sync/sync"
 	"github.com/andreykaipov/ynab-simplefin-sync/ynab"
 	"github.com/olekukonko/tablewriter"
 	ynabgo "go.bmvs.io/ynab"
@@ -20,39 +20,32 @@ var start string
 var end string
 var out string
 
-//func init() {
-//	flag.StringVar(&start, "start", "", "Start date of transactions range")
-//	flag.StringVar(&end, "end", "", "End date of transactions range")
-//	flag.StringVar(&out, "out", ".", "Output directory")
-//	flag.Parse()
-//
-//	if accessURL = os.Getenv("ACCESS_URL"); accessURL == "" {
-//		log.Fatal("Provide the SimpleFIN ACCESS_URL")
-//	}
-//}
-
 type CLI struct {
+	Config kong.ConfigFlag `type:"path" help:"Path to a YAML file with defaults"`
+
 	SimpleFINAccessURL string `required:"" env:"SIMPLEFIN_ACCESS_URL" name:"simplefin_access_url" help:"SimpleFIN access URL (claimed from token already)"`
 	YnabAccessToken    string `required:"" help:"Your YNAB access token to its API"`
 	YnabBudgetID       string `required:"" help:"Your YNAB budget UUID"`
 
-	Sync SyncCmd `cmd:"" help:"Sync SimpleFIN transactions with your YNAB budget"`
+	Sync sync.Cmd `cmd:"" help:"Sync SimpleFIN transactions with your YNAB budget"`
 
-	YnabCmd struct {
+	Ynab struct {
 		Accounts ynab.Accounts `cmd:"" help:""`
-	} `cmd:"" name:"ynab" help:""`
+	} `cmd:"" help:""`
 
-	SimpleFINCmd struct {
+	Simplefin struct {
 		Accounts     simplefin.Accounts     `cmd:"" help:""`
 		Transactions simplefin.Transactions `cmd:"" help:""`
-	} `cmd:"" name:"simplefin" help:""`
+	} `cmd:"" help:""`
 }
 
 func (o *CLI) AfterApply(ctx *kong.Context) error {
+	// setup clients
 	ctx.Bind(simplefin.Client{AccessURL: o.SimpleFINAccessURL})
 	ctx.Bind(o.YnabBudgetID)
 	ctx.BindTo(ynabgo.NewClient(o.YnabAccessToken), (*ynabgo.ClientServicer)(nil))
 
+	// setup common table settings
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAutoWrapText(false)
 	table.SetAutoFormatHeaders(true)
@@ -122,54 +115,3 @@ func yamlEnvResolver(r io.Reader) (kong.Resolver, error) {
 
 	return f, nil
 }
-
-func marshal(v interface{}) string {
-	b, err := json.Marshal(v)
-	if err != nil {
-		panic(fmt.Errorf("marshalling %#v: %w", v, err))
-	}
-
-	return string(b)
-}
-
-/*
-func f() {
-	//_ = ynab.NewClient(o.YnabAccessToken)
-
-	//budget, err := client.Transaction().CreateTransactions(o.BudgetID, nil)
-	//if err != nil {
-	//	return err
-	//}
-
-	//	for _, t := range budget.Budget.Transactions {
-	//		fmt.Printf("%#v\n", t.Date)
-	//	}
-
-	for _, account := range data.Accounts {
-		fname := slug(account.Org.Name) + "_" + slug(account.Name) + ".csv"
-		f, err := os.Create(out + "/" + fname)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer f.Close()
-
-		fmt.Printf("For %s, balances are... [Current: %v] [Available: %v]\n", fname, account.Balance, account.AvailableBalance)
-
-		w := csv.NewWriter(f)
-		defer w.Flush()
-
-		w.Write([]string{"Date", "Payee", "Memo", "Amount"})
-
-		for _, tx := range account.Transactions {
-			date := time.Unix(int64(tx.Posted), 0).Format("01-02-2006")
-
-			memo := tx.Memo
-			if memo == "" {
-				memo = tx.Description
-			}
-
-			w.Write([]string{date, tx.Payee, memo, tx.Amount})
-		}
-	}
-}
-*/
