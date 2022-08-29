@@ -12,6 +12,8 @@ It's an alternative to the YNAB bank import feature for linked accounts.
 It also doubles as a handy CLI for viewing your YNAB and SimpleFIN accounts:
 
 ```console
+❯ go install github.com/andreykaipov/ynab-simplefin-sync@latest
+
 ❯ ynab-simplefin-sync --help
 Usage: ynab-simplefin-sync --simplefin_access_url=STRING --ynab-access-token=STRING --ynab-budget-id=STRING <command>
 
