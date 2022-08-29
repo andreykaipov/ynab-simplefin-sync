@@ -31,11 +31,12 @@ func (o *Cmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin simplef
 	table.SetHeader([]string{"SimpleFIN Org", "SimpleFIN Account", "YNAB Account"})
 
 	for _, account := range data.Accounts {
-		simplefinID := strings.TrimPrefix(account.ID, "ACT-")
-
-		ynabAccountID, ok := o.SimpleFINYnabAccountMapping[simplefinID]
+		trimmedID := strings.TrimPrefix(account.ID, "ACT-")
+		ynabAccountID, ok := o.SimpleFINYnabAccountMapping[trimmedID]
 		if !ok {
-			return fmt.Errorf("didn't find %s in simplefin ynab mapping", simplefinID)
+			if ynabAccountID, ok = o.SimpleFINYnabAccountMapping[account.ID]; !ok {
+				return fmt.Errorf("didn't find %s in simplefin ynab mapping", account.ID)
+			}
 		}
 
 		ynabAccount, err := ynab.Account().GetAccount(budgetID, ynabAccountID)
