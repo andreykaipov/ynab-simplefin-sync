@@ -126,6 +126,10 @@ func (o *Client) Get(path string, dates ...string) (*Response, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("simplefin accounts: got %s", resp.Status)
+	}
+
 	parsed := &Response{}
 	if err := json.Unmarshal(body, parsed); err != nil {
 		return nil, err
