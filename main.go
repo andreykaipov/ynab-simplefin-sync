@@ -68,15 +68,16 @@ func main() {
 	home := os.Getenv("HOME")
 	cli := &CLI{}
 
+	name := "ynab-simplefin-sync"
 	ctx := kong.Parse(
 		cli,
-		kong.Name("ynab-simplefin-sync"),
+		kong.Name(name),
 		kong.Description("Sync your YNAB accounts with info from SimpleFIN via SimpleFIN Bridge"),
 		kong.Configuration(
 			yamlEnvResolver,
-			"config.yml",
-			fmt.Sprintf("%s/.ynab-simplefin-sync.yml", home),
-			fmt.Sprintf("%s/config/ynab-simplefin-sync/.config.yml", home),
+			fmt.Sprintf("%s.config.yml", name),
+			fmt.Sprintf("%s/.%s.yml", home, name),
+			fmt.Sprintf("%s/config/%s/config.yml", home, name),
 		),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 	)
