@@ -1,0 +1,13 @@
+---
+simplefin_access_url: envexpand:$SIMPLEFIN_ACCESS_URL
+
+ynab_budget_id: uuid
+ynab_access_token: envexpand:$YNAB_ACCESS_TOKEN
+
+# no need for the ACT- prefix when specifying the SimpleFIN account UUIDs
+#
+simplefin_ynab_account_mapping:
+  simplefin-uuid-1: ynab-uuid-1
+  simplefin-uuid-2: ynab-uuid-2
+  simplefin-uuid-3: ynab-uuid-3
+  simplefin-uuid-4: ynab-uuid-4
