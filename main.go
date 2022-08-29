@@ -77,7 +77,7 @@ func main() {
 			yamlEnvResolver,
 			fmt.Sprintf("%s.config.yml", name),
 			fmt.Sprintf("%s/.%s.yml", home, name),
-			fmt.Sprintf("%s/config/%s/config.yml", home, name),
+			fmt.Sprintf("%s/.config/%s/config.yml", home, name),
 		),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 	)
