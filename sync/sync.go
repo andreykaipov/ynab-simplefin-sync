@@ -14,10 +14,11 @@ import (
 )
 
 type Cmd struct {
-	SimpleFINYnabAccountMapping map[string]string `mapsep:";" name:"simplefin_ynab_account_mapping" help:"SimpleFIN account IDs mapped to YNAB account IDs"`
-	Start                       string            `help:"If given, transactions will be restricted to those on or after this Unix epoch timestamp"`
-	End                         string            `help:"If given, transactions will be restricted to those before (but not on) this Unix epoch timestamp"`
-	PrintAccounts               bool              `default:"false" help:"If present, will print the resolved SimpleFIN/YNAB account mapping"`
+	SimpleFINYnabAccountMapping map[string]string     `mapsep:";" name:"simplefin_ynab_account_mapping" help:"SimpleFIN account IDs mapped to YNAB account IDs"`
+	Start                       string                `help:"If given, transactions will be restricted to those on or after this Unix epoch timestamp"`
+	End                         string                `help:"If given, transactions will be restricted to those before (but not on) this Unix epoch timestamp"`
+	PrintAccounts               bool                  `default:"false" help:"If present, will print the resolved SimpleFIN/YNAB account mapping"`
+	Color                       transaction.FlagColor `default:"" enum:",red,orange,green,yellow,blue,purple" help:"The color of the transactions"`
 }
 
 func (o *Cmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin simplefin.Client, table *tablewriter.Table) error {
@@ -60,7 +61,7 @@ func (o *Cmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin simplef
 			amount = amount * 1000
 			date := api.Date{Time: time.Unix(int64(tx.Posted), 0)}
 
-			txs = append(txs, transaction.PayloadTransaction{
+			tx := transaction.PayloadTransaction{
 				AccountID: ynabAccountID,
 				Date:      date,
 				Amount:    int64(amount),
@@ -68,9 +69,12 @@ func (o *Cmd) Run(budgetID string, ynab ynabgo.ClientServicer, simplefin simplef
 				Approved:  false,
 				PayeeName: ptr(tx.Payee),
 				Memo:      ptr(memo),
-				FlagColor: ptr(transaction.FlagColorYellow),
 				ImportID:  ptr(fmt.Sprintf("sync:%d:%d", int64(amount), tx.Posted)),
-			})
+			}
+			if o.Color != "" {
+				tx.FlagColor = ptr(o.Color)
+			}
+			txs = append(txs, tx)
 		}
 	}
 
